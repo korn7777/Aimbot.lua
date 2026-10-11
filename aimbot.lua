@@ -432,7 +432,7 @@ MainTab:CreateToggle({ Name = "ไม่ล็อคทะลุกำแพง"
 MainTab:CreateSection("ตั้งค่าวงล็อค FOV")
 MainTab:CreateToggle({ Name = "วงกลม FOV", CurrentValue = false, Flag = "FOVToggle", Callback = function(v) FOVEnabled = v end })
 MainTab:CreateToggle({ Name = "วงกลม FOV Rainbow", CurrentValue = false, Flag = "FOVRainbowToggle", Callback = function(v) FOVRainbow = v end })
-MainTab:CreateSlider({ Name = "ขนาดรัศมี FOV", Range = {20, 400}, Increment = 1, CurrentValue = 120, Flag = "FOVSlider", Callback = function(v) FOVRadius = v end })
+MainTab:CreateSlider({ Name = "ขนาดรัศมี FOV", Range = {20, 1000}, Increment = 1, CurrentValue = 120, Flag = "FOVSlider", Callback = function(v) FOVRadius = v end })
 MainTab:CreateSlider({ Name = "ความหนาวงกลม", Range = {1, 5}, Increment = 1, CurrentValue = 1, Flag = "FOVThicknessSlider", Callback = function(v) FOVThickness = v end })
 MainTab:CreateColorPicker({ Name = "สีของวงกลม FOV", Color = Color3.fromRGB(255, 255, 255), Flag = "FOVColorPicker", Callback = function(v) FOVColor = v end })
 
