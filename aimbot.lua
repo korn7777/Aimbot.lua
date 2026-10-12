@@ -1,3 +1,4 @@
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -240,23 +241,28 @@ RunService.RenderStepped:Connect(function()
         FOVFrame.Visible = false
     end
 
-    -- ระบบล็อคหัวแม่นยำ 100% บังคับล็อกที่ Head ทันที
-    if AimbotEnabled then
-        local targetPart = nil
-        local shortestDist = FOVRadius
+if AimbotEnabled then
+    local targetPart = nil
+    local shortestDist = FOVRadius
+    
+    local viewport = Camera.ViewportSize
+    local ScreenCenter = Vector2.new(viewport.X / 2, viewport.Y / 2)
 
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                local passTeam = not TeamCheckEnabled or player.Team ~= LocalPlayer.Team
-                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                local headPart = player.Character:FindFirstChild("Head")
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local passTeam = not TeamCheckEnabled or player.Team ~= LocalPlayer.Team
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            local headPart = player.Character:FindFirstChild("Head")
 
-                if passTeam and humanoid and humanoid.Health > 0 and headPart then
-                    local pos, onScreen = Camera:WorldToViewportPoint(headPart.Position)
-                    if onScreen then
-                        local screenPos = Vector2.new(pos.X, pos.Y)
-                        local dist = (screenPos - ScreenCenter).Magnitude
-                        if dist < shortestDist and IsVisible(headPart, player.Character) then
+            if passTeam and humanoid and humanoid.Health > 0 and headPart then
+                local pos, onScreen = Camera:WorldToScreenPoint(headPart.Position)
+                
+                if onScreen then
+                    local screenPos = Vector2.new(pos.X, pos.Y)
+                    local dist = (screenPos - ScreenCenter).Magnitude
+                    
+                    if dist < shortestDist then
+                        if IsVisible(headPart, player.Character) then
                             shortestDist = dist
                             targetPart = headPart
                         end
@@ -264,11 +270,19 @@ RunService.RenderStepped:Connect(function()
                 end
             end
         end
-
-        if targetPart then
-            Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
-        end
     end
+
+    if targetPart then
+    
+        local targetCharacter = targetPart.Parent
+        local rootPart = targetCharacter and targetCharacter:FindFirstChild("HumanoidRootPart")
+        local velocity = rootPart and rootPart.Velocity or Vector3.new(0, 0, 0)
+        
+        local predictedPosition = targetPart.Position + (velocity * 0.05)
+        local camPos = Camera.CFrame.Position
+        Camera.CFrame = CFrame.lookAt(camPos, predictedPosition)
+    end
+end
 
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
