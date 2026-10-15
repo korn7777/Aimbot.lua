@@ -849,14 +849,24 @@ MiscTab:CreateToggle({
    end,
 })
 
-local WalkSpeedEnabled = false
-local CustomWalkSpeed = 16
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
-RunService.RenderStepped:Connect(function()
-    if WalkSpeedEnabled then
-        local character = LocalPlayer.Character
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = CustomWalkSpeed
+local SpeedEnabled = false
+local SpeedValue = 16
+
+-- ฟังก์ชันคอยบังคับค่า WalkSpeed ตลอดเวลาป้องกันเกมรีเซ็ตค่ากลับ
+RunService.Heartbeat:Connect(function()
+    if not SpeedEnabled then return end
+    
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum and hum.Health > 0 then
+            if hum.WalkSpeed ~= SpeedValue then
+                hum.WalkSpeed = SpeedValue
+            end
         end
     end
 end)
@@ -866,26 +876,28 @@ MiscTab:CreateSection("ระบบตัวละคร")
 MiscTab:CreateToggle({
    Name = "วิ่งเร็ว",
    CurrentValue = false,
-   Flag = "WalkSpeedToggle",
+   Flag = "SpeedToggle",
    Callback = function(Value)
-      WalkSpeedEnabled = Value
+      SpeedEnabled = Value
       if not Value then
-         local character = Players.LocalPlayer.Character
-         if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = 16
-         end
+          local char = LocalPlayer.Character
+          if char then
+              local hum = char:FindFirstChildOfClass("Humanoid")
+              if hum then hum.WalkSpeed = 16 end
+          end
       end
    end,
 })
 
 MiscTab:CreateSlider({
-   Name = "ความเร็ววิ่ง",
+   Name = "ปรับความเร็ววิ่ง",
    Range = {16, 200},
    Increment = 1,
+   Suffix = "Speed",
    CurrentValue = 16,
-   Flag = "WalkSpeedSlider",
+   Flag = "SpeedSlider",
    Callback = function(Value)
-      CustomWalkSpeed = Value
+      SpeedValue = Value
    end,
 })
 
@@ -1052,9 +1064,70 @@ MiscTab:CreateToggle({
    end,
 })
 
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local CustomBrightEnabled = false
+local UserBrightness = 2 
+
+local OriginalBrightness = Lighting.Brightness
+local OriginalGlobalShadows = Lighting.GlobalShadows
+local OriginalAmbient = Lighting.Ambient
+
+MiscTab:CreateSection("ระบบแสงสว่าง")
+
+MiscTab:CreateToggle({
+   Name = "ปรับแสงสว่าง",
+   CurrentValue = false,
+   Flag = "CustomBrightToggle",
+   Callback = function(Value)
+      CustomBrightEnabled = Value
+      
+      if Value then
+
+          Lighting.GlobalShadows = false
+          Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+          Lighting.Brightness = UserBrightness
+      else
+        
+          Lighting.GlobalShadows = OriginalGlobalShadows
+          Lighting.Ambient = OriginalAmbient
+          Lighting.Brightness = OriginalBrightness
+      end
+   end,
+})
+
+MiscTab:CreateSlider({
+   Name = "ระดับความสว่าง",
+   Range = {0, 10},
+   Increment = 0.5,
+   Suffix = "x",
+   CurrentValue = 2,
+   Flag = "BrightSlider",
+   Callback = function(Value)
+      UserBrightness = Value
+      if CustomBrightEnabled then
+          Lighting.Brightness = UserBrightness
+      end
+   end,
+})
+
+RunService.RenderStepped:Connect(function()
+    if CustomBrightEnabled then
+        Lighting.GlobalShadows = false
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.Brightness = UserBrightness
+    end
+end)
+
 Rayfield:LoadConfiguration()
 
-Rayfield:Notify({ Title = "by มาร์คปากเหม็น", Content = "ขอให้ยิงเด็กกระโปกให้สนุก", Duration = 5 })
+Rayfield:Notify({ 
+    Title = "by มาร์คปากเหม็น", 
+    Content = "ขอให้ยิงเด็กกระโปกให้สนุก", 
+    Duration = 5,
+    Image = "ghost"
+})
 
 task.spawn(function()
     local function ChangeButtonText(parent)
